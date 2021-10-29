@@ -1,0 +1,171 @@
+/**
+* Assignment 2
+* Giuliana Bouzon - 1940108
+* Chilka Joy Libut Castro - 2030864
+* For Database course - Winter 2021
+* Teacher Nagat Drawel 
+* Submitted on March 14th, 2021
+*/
+
+Begin
+    for c in (select table_name from user_tables) loop
+    execute immediate ('drop table '||c.table_name||' cascade constraints');
+    end loop;
+End; 
+/
+
+-- creating client table
+CREATE TABLE CLIENT (
+    CL_ID CHAR(5) CONSTRAINT CLIENT_CLIENTID_PK PRIMARY KEY,
+    CL_FNAME VARCHAR(30) CONSTRAINT CLIENT_FNAME_NN NOT NULL,
+    CL_LNAME VARCHAR(30) CONSTRAINT CLIENT_LNAME_NN NOT NULL,
+    CL_TYPE VARCHAR(7),
+    CONSTRAINT CLIENT_TYPE_CK CHECK (UPPER(CL_TYPE) = 'STAFF' OR UPPER(CL_TYPE) = 'STUDENT' OR UPPER(CL_TYPE) = 'TEACHER')
+);
+
+-- creating author table
+CREATE TABLE AUTHOR (
+    AUTH_ID CHAR(5) CONSTRAINT AUTHOR_ID_PK PRIMARY KEY,
+    AUTH_FNAME VARCHAR(30) CONSTRAINT AUTHOR_FNAME_NN NOT NULL,
+    AUTH_LNAME VARCHAR(30) CONSTRAINT AUTHOR_LNAME_NN NOT NULL,
+    AUTH_DOB DATE
+);
+
+-- creating book table
+CREATE TABLE BOOK (
+    BK_NUM CHAR(10) CONSTRAINT BOOK_NUM_PK PRIMARY KEY,
+    BK_TITLE VARCHAR(100) CONSTRAINT BOOK_TITLE_NN NOT NULL,
+    BK_SUBJECT VARCHAR(30),
+    BK_PUB_YR CHAR(4)
+);
+
+--creating author_book table (BRIDGE)
+CREATE TABLE AUTHOR_BOOK ( 
+    BK_NUM CHAR(10),
+    AUTH_ID CHAR(5),
+    CONSTRAINT ab_auth_id_bk_num_pk PRIMARY KEY(AUTH_ID, BK_NUM),
+    CONSTRAINT ab_auth_id_fk FOREIGN KEY(AUTH_ID) REFERENCES AUTHOR,
+    CONSTRAINT ab_bk_num_fk FOREIGN KEY(BK_NUM) REFERENCES BOOK
+);
+
+-- creating checkout table
+CREATE TABLE CHECKOUT (
+    CO_NUM CHAR(8) CONSTRAINT CHECKOUT_CONUM_PK PRIMARY KEY,
+    BK_NUM CHAR(10),
+    CL_ID CHAR(5),
+    CO_DATE DATE,
+    CO_DUE_DATE DATE,
+    CI_DATE DATE,
+    CONSTRAINT CHECKOUT_DATE_CHECK CHECK(CO_DUE_DATE > CO_DATE AND CI_DATE >= CO_DATE),
+    CONSTRAINT CHECKOUT_BOOKNUM_FK FOREIGN KEY (BK_NUM) REFERENCES BOOK,
+    CONSTRAINT CHECKOUT_CLIENTID_FK FOREIGN KEY (CL_ID) REFERENCES CLIENT
+);
+
+
+--inserting values into client table
+INSERT INTO CLIENT VALUES ('10001', 'Albert', 'Magnus', 'Teacher');
+INSERT INTO CLIENT VALUES ('20001', 'Chilka', 'Castro', 'Student');
+INSERT INTO CLIENT VALUES ('20002', 'Giuliana', 'Bouzon', 'Student');
+INSERT INTO CLIENT VALUES ('30001', 'Sam', 'Purcell', 'Staff');
+INSERT INTO CLIENT VALUES ('30002', 'Dean', 'Campbell', 'Staff');
+INSERT INTO CLIENT VALUES ('10002', 'Ash', 'Miles', 'Teacher');
+INSERT INTO CLIENT VALUES ('10003', 'Atticus', 'Pund', 'Teacher');
+INSERT INTO CLIENT VALUES ('20003', 'Theodore', 'Finch', 'Student');
+INSERT INTO CLIENT VALUES ('30003', 'Violet', 'Fields', 'Staff');
+INSERT INTO CLIENT VALUES ('20004', 'George', 'George', 'Student');
+INSERT INTO CLIENT VALUES ('30004', 'Saimon', 'Saimon', 'Staff');
+INSERT INTO CLIENT VALUES ('10004', 'Son', 'Rife', 'Teacher');
+
+-- inserting values into author table
+INSERT INTO AUTHOR VALUES ('10001', 'Lynne', 'Cox', TO_DATE('01/02/1957', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10002', 'John', 'Green', TO_DATE('08/24/1977', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10003', 'Albert', 'Camus', TO_DATE('11/07/1913', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10004', 'Joanna Ruth', 'Meyer', TO_DATE('08/17/1984', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10005', 'Anthony', 'Horowitz', TO_DATE('04/05/1955', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10006', 'Haruki', 'Murakami', TO_DATE('01/12/1949', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10007', 'Jennifer', 'Niven', TO_DATE('05/14/1968', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10008', 'Sebastian', 'Barry', TO_DATE('07/05/1955', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10009', 'Holly', 'Sloan', TO_DATE('03/02/1958', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10010', 'Meg', 'Wolitzer', TO_DATE('05/28/1959', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10011', 'Lauren', 'Willig', TO_DATE('06/25/1978', 'MM/DD/YYYY'));
+INSERT INTO AUTHOR VALUES ('10012', 'Karen', 'White', TO_DATE('12/08/1967', 'MM/DD/YYYY'));     
+INSERT INTO AUTHOR VALUES ('10013', 'Beatriz', 'Williams', TO_DATE('01/15/1974', 'MM/DD/YYYY')); 
+
+-- inserting values into book table
+INSERT INTO BOOK VALUES ('1000000001', 'Swimming to Antarctica', 'Biography', '2004');
+INSERT INTO BOOK VALUES ('1000000002', 'Looking for Alaska', 'Fiction', '2005');
+INSERT INTO BOOK VALUES ('1000000003', 'The Myth of Sisyphus', 'Essay', '1942');
+INSERT INTO BOOK VALUES ('1000000004', 'The Stranger', 'Fiction', '1942');
+INSERT INTO BOOK VALUES ('1000000005', 'Echo North', 'Fiction', '2019');
+INSERT INTO BOOK VALUES ('1000000006', 'The Magpie Murders', 'Murder Mystery', '2016');
+INSERT INTO BOOK VALUES ('1000000007', 'Colorless Tsukuru Tazaki and His Years of Pilgrimage', 'Fiction', '2013');
+INSERT INTO BOOK VALUES ('1000000008', 'Kafka on the Shore', 'Fiction', '2002');
+INSERT INTO BOOK VALUES ('1000000009', 'All the Bright Places', 'Adult Fiction', '2015');
+INSERT INTO BOOK VALUES ('1000000010', 'A Long Long Way', 'Historical Fiction', '2005');
+INSERT INTO BOOK VALUES ('1000000011', 'To Night Owl from Dogfish', 'Fiction', '2019');
+INSERT INTO BOOK VALUES ('1000000012', 'The Glass Ocean', 'Historical Fiction', '2018');
+
+-- inserting values to author_book table - multiple authors ALLOWEEEED
+INSERT INTO AUTHOR_BOOK VALUES('1000000001', '10001');
+INSERT INTO AUTHOR_BOOK VALUES('1000000002', '10002');
+INSERT INTO AUTHOR_BOOK VALUES('1000000003', '10003');
+INSERT INTO AUTHOR_BOOK VALUES('1000000004', '10003');
+INSERT INTO AUTHOR_BOOK VALUES('1000000005', '10004');
+INSERT INTO AUTHOR_BOOK VALUES('1000000006', '10005');
+INSERT INTO AUTHOR_BOOK VALUES('1000000007', '10006');
+INSERT INTO AUTHOR_BOOK VALUES('1000000008', '10006');
+INSERT INTO AUTHOR_BOOK VALUES('1000000009', '10007');
+INSERT INTO AUTHOR_BOOK VALUES('1000000010', '10008');
+INSERT INTO AUTHOR_BOOK VALUES('1000000011', '10009');
+INSERT INTO AUTHOR_BOOK VALUES('1000000011', '10010');
+INSERT INTO AUTHOR_BOOK VALUES('1000000012', '10011');
+INSERT INTO AUTHOR_BOOK VALUES('1000000012', '10012');
+INSERT INTO AUTHOR_BOOK VALUES('1000000012', '10013');
+
+-- inserting values into checkout table
+INSERT INTO CHECKOUT VALUES ('A000001','1000000001', '20002', TO_DATE('03/10/2021', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000002','1000000002', '20002', TO_DATE('03/10/2021', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000003','1000000006', '30002', TO_DATE('11/09/2019', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000004','1000000003', '10001', TO_DATE('10/22/2019', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000005','1000000005', '30001', TO_DATE('10/05/2019', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000006','1000000004', '20001', TO_DATE('08/23/2019', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000007','1000000007', '10002', TO_DATE('07/16/2019', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000008','1000000008', '10001', TO_DATE('05/14/2019', 'MM/DD/YYYY'), NULL, NULL);
+INSERT INTO CHECKOUT VALUES ('A000009','1000000008', '10001', TO_DATE('03/08/2020', 'MM/DD/YYYY'), NULL, NULL);
+
+-- formatting dates
+ALTER SESSION SET NLS_DATE_FORMAT = 'MM/DD/YYYY';
+
+-- MAKING DUE DATE 14 DAYS AFTER CHECKOUT DATE
+UPDATE CHECKOUT
+    SET CO_DUE_DATE = CO_DATE + 14;
+  
+-- making the check in date to 3 days after due date because I am always late ;(
+UPDATE CHECKOUT 
+    SET CI_DATE = CO_DUE_DATE + 3
+    WHERE CL_ID = '20002';
+    
+-- making other people's check in date 4 days before the due date
+UPDATE CHECKOUT
+    SET CI_DATE = CO_DUE_DATE - 4
+    WHERE CL_ID != '20002';
+  
+------------------------------------------------------ QUERIES ---------------------------------------------------  
+-- testing queries
+--select * from client;
+--select * from author;
+--select * from book;
+--select * from checkout;
+--select * from author_book;
+
+select * from client natural join checkout natural join book order by cl_fname;
+
+-- checking client type
+select * from client where LOWER(cl_type) = 'teacher';
+
+-- showing authors with books
+SELECT * FROM book b NATURAL JOIN author_book ab natural join author a order by b.bk_pub_yr;
+
+-- if you want to see checkout table with the name of the book 
+SELECT * FROM CLIENT NATURAL JOIN CHECKOUT NATURAL JOIN BOOK ORDER BY CI_DATE DESC;
+
